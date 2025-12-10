@@ -3,7 +3,7 @@ import gsap from "gsap";
 import { SplitText } from "gsap/all";
 import { useMediaQuery } from "react-responsive";
 
-const HeroSection = () => {
+const HeroSection = ({ onOpen }) => {
   const isMobile = useMediaQuery({
     query: "(max-width: 768px)",
   });
@@ -65,18 +65,25 @@ const HeroSection = () => {
     <section className="bg-main-bg">
       <div className="hero-container">
         {isTablet ? (
-          <>
-            {isMobile && (
-              <img
-                src="/images/hero-bg.png"
-                className="absolute bottom-40 size-full object-cover"
-              />
-            )}
-            <img
-              src="/images/hero-img.png"
-              className="absolute bottom-0 left-1/2 -translate-x-1/2 object-auto"
-            />
-          </>
+          // <>
+          //   {isMobile && (
+          //     <img
+          //       src="/images/hero-image.png"
+          //       className="absolute bottom-40 size-full object-cover"
+          //     />
+          //   )}
+          //   <img
+          //     src="/images/hero-image.png"
+          //     className="absolute bottom-0 left-1/2 -translate-x-1/2 object-auto"
+          //   />
+          // </>
+          <video
+            src="/videos/hero-videotea.mp4"
+            autoPlay
+            muted
+            playsInline
+            className="absolute inset-0 w-full h-full object-cover"
+          />
         ) : (
           <video
             src="/videos/hero-videotea.mp4"
@@ -106,9 +113,14 @@ const HeroSection = () => {
             franchise model. Brew delight for every neighborhood.
           </h2>
 
-          <div className="hero-button">
-            <p>Join Tea Gang</p>
-          </div>
+        
+            <button
+              onClick={onOpen}
+              className=" mt-10 bg-amber-500 hover:bg-amber-600 text-white font-semibold py-3 px-6 rounded-full shadow-md"
+            >
+              Join Tea Gang
+            </button>
+          
         </div>
       </div>
     </section>

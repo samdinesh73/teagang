@@ -102,7 +102,7 @@ const NutritionSection = () => {
           </div>
         </div>
 
-        <div className="nutrition-box bottom-0">
+        <div className="nutrition-box bottom-0 left-0">
           <div className="list-wrapper">
             {lists.map((nutrient, index) => (
               <div key={index} className="relative flex-1 col-center">

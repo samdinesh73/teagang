@@ -1,9 +1,4 @@
-import { useState } from "react";
-import JoinPopup from "./JoinPopup";
-
-const NavBar = () => {
-  const [open, setOpen] = useState(false);
-
+const NavBar = ({ onOpen }) => {
   return (
     <nav className="fixed top-0 left-0 z-50 md:p-9 p-3 w-full">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
@@ -15,7 +10,7 @@ const NavBar = () => {
 
         <div className="hidden md:block">
           <button
-            onClick={() => setOpen(true)}
+            onClick={onOpen}
             className="bg-amber-500 hover:bg-amber-600 text-white font-semibold py-2 px-4 rounded-full shadow-md transition-all"
           >
             Join Gang
@@ -24,15 +19,13 @@ const NavBar = () => {
 
         <div className="md:hidden">
           <button
-            onClick={() => setOpen(true)}
+            onClick={onOpen}
             className="bg-amber-500 hover:bg-amber-600 text-white font-semibold py-2 px-3 rounded-full shadow"
             aria-label="Join Gang"
           >
             Join
           </button>
         </div>
-
-        <JoinPopup isOpen={open} onClose={() => setOpen(false)} />
       </div>
     </nav>
   );
