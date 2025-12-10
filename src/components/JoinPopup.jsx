@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
+import emailjs from "@emailjs/browser";
 
 const JoinPopup = ({ isOpen, onClose }) => {
   const overlayRef = useRef(null);
@@ -52,40 +53,91 @@ const JoinPopup = ({ isOpen, onClose }) => {
     setLoading(true);
     setMessage(null);
 
-    const accountSid = import.meta.env.VITE_TWILIO_ACCOUNT_SID;
-    const authToken = import.meta.env.VITE_TWILIO_AUTH_TOKEN;
-    const twilioFrom = import.meta.env.VITE_TWILIO_WHATSAPP_FROM;
-    const twilioTo = import.meta.env.VITE_TO_WHATSAPP;
-
-    if (!accountSid || !authToken || !twilioFrom || !twilioTo) {
-      setMessage({ type: "error", text: "WhatsApp not configured. Check env variables." });
+    if (!name || !email) {
+      setMessage({ type: "error", text: "Name and email are required." });
       setLoading(false);
       return;
     }
 
     try {
-      const messageBody = `New Join Gang submission:\nName: ${name}\nEmail: ${email}\nPhone: ${number || "-"}\nLocation: ${location || "-"}`;
-      const encodedMessage = new URLSearchParams();
-      encodedMessage.append("From", `whatsapp:${twilioFrom}`);
-      encodedMessage.append("To", `whatsapp:${twilioTo}`);
-      encodedMessage.append("Body", messageBody);
+      let emailSent = false;
+      let whatsappSent = false;
 
-      console.log("[DEBUG] Sending WhatsApp to Twilio API...");
-      const auth = btoa(`${accountSid}:${authToken}`);
-      const res = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`, {
-        method: "POST",
-        headers: {
-          "Authorization": `Basic ${auth}`,
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-        body: encodedMessage.toString(),
-      });
+      // Send email via EmailJS
+      try {
+        const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID;
+        const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
+        const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
 
-      const data = await res.json();
-      console.log("[DEBUG] Twilio response:", data);
+        if (!serviceId || !templateId || !publicKey) {
+          throw new Error("EmailJS configuration missing.");
+        }
 
-      if (res.ok && data.sid) {
-        setMessage({ type: "success", text: "Thanks! We sent your details to WhatsApp." });
+        emailjs.init(publicKey);
+
+        console.log("[DEBUG] Sending email via EmailJS...");
+        const templateParams = {
+          name,
+          email,
+          number: number || "-",
+          location: location || "-",
+        };
+
+        const response = await emailjs.send(serviceId, templateId, templateParams);
+        console.log("[DEBUG] EmailJS response:", response);
+
+        if (response.status === 200) {
+          emailSent = true;
+          console.log("[SUCCESS] Email sent successfully");
+        }
+      } catch (emailErr) {
+        console.error("[ERROR] Email send error:", emailErr);
+      }
+
+      // Send WhatsApp via Twilio
+      try {
+        const accountSid = import.meta.env.VITE_TWILIO_ACCOUNT_SID;
+        const authToken = import.meta.env.VITE_TWILIO_AUTH_TOKEN;
+        const twilioFrom = import.meta.env.VITE_TWILIO_WHATSAPP_FROM;
+        const twilioTo = import.meta.env.VITE_TO_WHATSAPP;
+
+        if (!accountSid || !authToken || !twilioFrom || !twilioTo) {
+          console.warn("[WARN] WhatsApp configuration incomplete. Skipping WhatsApp.");
+        } else {
+          console.log("[DEBUG] Sending WhatsApp via Twilio...");
+          const messageBody = `New Join Gang submission:\nName: ${name}\nEmail: ${email}\nPhone: ${number || "-"}\nLocation: ${location || "-"}`;
+          const encodedMessage = new URLSearchParams();
+          encodedMessage.append("From", `whatsapp:${twilioFrom}`);
+          encodedMessage.append("To", `whatsapp:${twilioTo}`);
+          encodedMessage.append("Body", messageBody);
+
+          const auth = btoa(`${accountSid}:${authToken}`);
+          const whatsappRes = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`, {
+            method: "POST",
+            headers: {
+              "Authorization": `Basic ${auth}`,
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: encodedMessage.toString(),
+          });
+
+          const whatsappData = await whatsappRes.json();
+          console.log("[DEBUG] Twilio response:", whatsappData);
+
+          if (whatsappRes.ok && whatsappData.sid) {
+            whatsappSent = true;
+            console.log("[SUCCESS] WhatsApp sent successfully, sid:", whatsappData.sid);
+          } else {
+            console.error("[ERROR] WhatsApp send failed:", whatsappData);
+          }
+        }
+      } catch (waErr) {
+        console.error("[ERROR] WhatsApp error:", waErr.message);
+      }
+
+      // Show success message if at least one was sent
+      if (emailSent || whatsappSent) {
+        setMessage({ type: "success", text: "Thanks! Your submission was sent successfully." });
         setName("");
         setEmail("");
         setNumber("");
@@ -95,12 +147,11 @@ const JoinPopup = ({ isOpen, onClose }) => {
           onClose();
         }, 1400);
       } else {
-        console.error("[ERROR] Twilio error:", data);
-        setMessage({ type: "error", text: data.message || "Failed to send WhatsApp" });
+        throw new Error("Failed to send both email and WhatsApp");
       }
     } catch (err) {
       console.error("[ERROR] Submit error:", err);
-      setMessage({ type: "error", text: "Error sending message" });
+      setMessage({ type: "error", text: err.message || "Error sending submission" });
     } finally {
       setLoading(false);
     }
