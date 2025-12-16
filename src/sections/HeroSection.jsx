@@ -104,7 +104,7 @@ const HeroSection = ({ onOpen }) => {
             className="hero-text-scroll"
           >
             <div className="hero-subtitle">
-              <h1>Handcrafted Tea • Franchise Ready</h1>
+              <h1>Franchise Ready</h1>
             </div>
           </div>
 

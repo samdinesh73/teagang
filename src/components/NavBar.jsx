@@ -3,9 +3,9 @@ const NavBar = ({ onOpen }) => {
     <nav className="fixed top-0 left-0 z-50 md:p-9 p-3 w-full">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <img
-          src="/images/tea-gang-logo.svg"
+          src="/images/TGlogo@4x.png"
           alt="Tea Gang"
-          className="md:w-28 w-24"
+          className="md:w-18 lg:w-24 lg:h-24 sm:w-20 sm:h-20 w-15 h-20"
         />
 
         <div className="hidden md:block">

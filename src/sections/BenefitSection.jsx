@@ -51,7 +51,7 @@ const BenefitSection = () => {
             Discover the advantages of joining Tea Gang
           </p>
 
-          <div className="mt-20 col-center">
+          <div className="lg:mt-20 col-center">
             <ClipPathTitle
               title={"Proven Model"}
               color={"#faeade"}
